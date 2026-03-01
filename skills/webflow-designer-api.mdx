@@ -1,0 +1,342 @@
+---
+title: "Designer API"
+description: "Build Designer Extensions or generate code snippets for the Designer API Playground"
+---
+
+## Overview
+
+The Webflow Designer API enables programmatic control of the Webflow Designer. You can manipulate elements, styles, components, pages, variables, and assets through JavaScript.
+
+This skill supports two distinct workflows:
+
+<CardGroup cols={2}>
+  <Card title="Designer Extensions" icon="puzzle-piece">
+    Build full extensions with a UI that run inside the Webflow Designer as iframes. Best for reusable tools and Marketplace apps.
+  </Card>
+  <Card title="Designer API Playground" icon="code">
+    Write and run standalone code snippets directly in the Playground app. Best for quick prototyping and one-off automations.
+  </Card>
+</CardGroup>
+
+<Tip>
+When working with this skill, the agent will ask which workflow you'd like to use, or infer from context if it's obvious.
+</Tip>
+
+## Download Skill
+
+Add this skill to your AI agent for Designer API assistance:
+
+```bash
+https://skills.224ai.au/webflow-designer-api.skill
+```
+
+## Workflows
+
+### 1. Designer Extensions
+
+Build full extensions with a UI that run inside the Webflow Designer as iframes.
+
+**When to use:**
+- Creating reusable tools for teams
+- Building Marketplace apps
+- Complex workflows with custom UI
+- Apps that need persistent state
+
+**Getting started:**
+```bash
+npx @webflow/create-webflow-extension my-extension
+cd my-extension
+npm install
+npm run dev
+```
+
+**Example extension code:**
+```typescript
+import { webflow } from '@webflow/designer-extension-typings';
+
+// Get all elements on the page
+const elements = await webflow.getAllElements();
+
+// Create a new div element
+const newDiv = await webflow.createDOM('DivBlock');
+await newDiv.setTextContent('Hello from extension!');
+
+// Insert it on the page
+const body = await webflow.getDefaultPage().then(p => p.getBody());
+await body.appendChild(newDiv);
+
+// Show success notification
+await webflow.notify({
+  message: 'Element created successfully!',
+  type: 'success'
+});
+```
+
+### 2. Designer API Playground
+
+Write and run standalone code snippets directly in the Playground app inside the Designer.
+
+**When to use:**
+- Quick prototyping and testing
+- Learning the API
+- One-off automations
+- Exploring API capabilities
+
+**Example Playground code:**
+```javascript
+// Find all heading elements
+const headings = await webflow.getAllElements();
+const h1s = headings.filter(async (el) => {
+  const tag = await el.getTag();
+  return tag === 'h1';
+});
+
+// Update their text color
+for (const h1 of h1s) {
+  const styles = await h1.getStyles();
+  await styles.setProperty('color', '#FF6B6B');
+}
+
+console.log(`Updated ${h1s.length} headings`);
+```
+
+<Info>
+The Playground app can be installed directly in the Designer. See **references/playground-workflow.md** for installation instructions.
+</Info>
+
+## Key Concepts
+
+<AccordionGroup>
+  <Accordion title="Element Manipulation">
+    Create, select, modify, and delete elements programmatically:
+    
+    - `webflow.createDOM(tag)` — Create new elements
+    - `webflow.getAllElements()` — Get all elements
+    - `element.getChildren()` — Traverse the DOM tree
+    - `element.remove()` — Delete elements
+  </Accordion>
+
+  <Accordion title="Styles API">
+    Set CSS properties with breakpoint and pseudo-state support:
+    
+    - `element.getStyles()` — Get style manager
+    - `styles.setProperty(prop, value)` — Set CSS properties
+    - Breakpoint-aware styling
+    - Pseudo-states (hover, active, focus)
+  </Accordion>
+
+  <Accordion title="Components API">
+    Work with Webflow components and instances:
+    
+    - Create component definitions
+    - Manage component instances
+    - Edit components in isolation
+  </Accordion>
+
+  <Accordion title="Pages & Variables">
+    Manage pages, folders, and design tokens:
+    
+    - Page and folder creation
+    - Design token variables
+    - Variable collections
+  </Accordion>
+
+  <Accordion title="Error Handling">
+    Robust error handling with cause tags:
+    
+    ```typescript
+    try {
+      await element.remove();
+    } catch (error) {
+      if (error.cause === 'ELEMENT_NOT_FOUND') {
+        console.log('Element already removed');
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Designer API Methods
+
+Both workflows use the same `webflow.*` Designer API. Here's a quick reference:
+
+| Category | Key Methods |
+|----------|-------------|
+| **Elements** | `createDOM()`, `getAllElements()`, `getSelectedElements()`, `appendChild()`, `remove()` |
+| **Styles** | `getStyles()`, `setProperty()`, `getProperty()`, breakpoint/pseudo-state methods |
+| **Components** | `createComponent()`, `getComponentInstances()`, `editComponentInContext()` |
+| **Pages** | `getAllPages()`, `createPage()`, `createFolder()`, `setHomePage()` |
+| **Variables** | `createVariable()`, `getVariables()`, `createVariableCollection()` |
+| **Assets** | `uploadAsset()`, `getAllAssets()` |
+| **Utilities** | `notify()`, `getSiteInfo()`, `subscribe()`, `authenticate()` |
+
+<Note>
+For complete API documentation, see **references/designer-apis-reference.md** in the skill.
+</Note>
+
+## Code Examples
+
+### Create and Style an Element
+
+```typescript
+// Create a new button
+const button = await webflow.createDOM('LinkBlock');
+await button.setTextContent('Click me');
+
+// Style the button
+const styles = await button.getStyles();
+await styles.setProperty('background-color', '#4A90E2');
+await styles.setProperty('color', 'white');
+await styles.setProperty('padding', '12px 24px');
+await styles.setProperty('border-radius', '8px');
+
+// Add hover state
+await styles.setProperty('background-color', '#357ABD', {
+  pseudoState: 'hover'
+});
+
+// Insert into page
+const body = await webflow.getDefaultPage().then(p => p.getBody());
+await body.appendChild(button);
+```
+
+### Bulk Update Elements
+
+```typescript
+// Find all paragraphs
+const allElements = await webflow.getAllElements();
+const paragraphs = [];
+
+for (const el of allElements) {
+  const tag = await el.getTag();
+  if (tag === 'p') {
+    paragraphs.push(el);
+  }
+}
+
+// Update font size on mobile breakpoint
+for (const p of paragraphs) {
+  const styles = await p.getStyles();
+  await styles.setProperty('font-size', '14px', {
+    breakpoint: 'small'
+  });
+}
+
+webflow.notify({
+  message: `Updated ${paragraphs.length} paragraphs`,
+  type: 'success'
+});
+```
+
+### Create a Design Token
+
+```typescript
+// Create a color variable
+const primaryColor = await webflow.createVariable({
+  name: 'Primary Color',
+  type: 'color',
+  value: '#4A90E2'
+});
+
+// Use it in styles
+const button = await webflow.createDOM('LinkBlock');
+const styles = await button.getStyles();
+await styles.setProperty('background-color', primaryColor);
+```
+
+## Design Guidelines
+
+When building Designer Extensions, follow Webflow's design system for a native look and feel:
+
+- Use Webflow CSS variables for colors, spacing, and typography
+- Match Webflow's component patterns (buttons, inputs, modals)
+- Follow accessibility best practices
+- Use the provided design assets
+
+<Tip>
+The skill includes **assets/webflow-variables.css** with all Webflow design system variables.
+</Tip>
+
+## Marketplace Guidelines
+
+Planning to publish your extension to the Webflow Marketplace?
+
+<CardGroup cols={2}>
+  <Card title="Register Your App" icon="app-store">
+    Configure capabilities and OAuth scopes
+  </Card>
+  <Card title="Follow Review Criteria" icon="clipboard-check">
+    Meet quality, security, and UX standards
+  </Card>
+  <Card title="Submit for Review" icon="paper-plane">
+    Submit your app and create a listing
+  </Card>
+  <Card title="Marketplace Success" icon="trophy">
+    Get discovered by thousands of Webflow users
+  </Card>
+</CardGroup>
+
+## Reference Documentation
+
+The skill includes comprehensive reference documentation:
+
+### Workflow Guides
+- **designer-extension-workflow.md** — Full guide for building Designer Extensions
+- **playground-workflow.md** — Quick guide for using the Playground
+
+### Designer API References
+- **designer-apis-reference.md** — All `webflow.*` methods in one table
+- **elements-api.md** — Element selection, insertion, presets, and builder
+- **styles-api.md** — Creating styles, CSS properties, breakpoints, pseudo-states
+- **components-api.md** — Component definitions, instances, editing context
+- **pages-api.md** — Page and folder management
+- **variables-api.md** — Design token variables and collections
+- **assets-api.md** — Asset upload and management
+- **extension-utilities.md** — Site info, events, notifications, app discovery
+- **error-handling.md** — Error structure, cause tags, recovery patterns
+- **code-examples.md** — Cross-API workflow examples
+
+### Design & Marketplace
+- **design-guidelines.md** — UI design for native Webflow look
+- **register-app.md** — Registering a Webflow App
+- **marketplace-guidelines.md** — Marketplace review criteria
+- **app-submission-and-listing.md** — Submitting your app
+- **faq.md** — FAQ and troubleshooting
+
+## Searching References
+
+```bash
+# List all references with metadata
+python scripts/search_references.py --list
+
+# Search by tag (exact match)
+python scripts/search_references.py --tag elements
+
+# Search by keyword
+python scripts/search_references.py --search styles
+```
+
+## CLI Commands
+
+For Designer Extensions development:
+
+```bash
+# Create a new extension
+npx @webflow/create-webflow-extension my-extension
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Test your extension
+npm run test
+```
+
+## License
+
+MIT License - See the [repository](https://github.com/224-industries/webflow-skills) for details.

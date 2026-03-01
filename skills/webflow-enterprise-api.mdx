@@ -1,0 +1,359 @@
+---
+title: "Enterprise API"
+description: "Enterprise-only API endpoints for workspace management, audit logs, and site configuration"
+---
+
+## Overview
+
+The Webflow Enterprise API provides endpoints exclusively available to Enterprise workspace customers. These endpoints enable workspace-level management, audit logging, site activity tracking, and advanced site configuration.
+
+<Warning>
+All endpoints require an **Enterprise workspace**. They will return errors on non-Enterprise plans.
+</Warning>
+
+## Download Skill
+
+Add this skill to your AI agent for Enterprise API assistance:
+
+```bash
+https://skills.224ai.au/webflow-enterprise-api.skill
+```
+
+## API Endpoints Overview
+
+All endpoints use `https://api.webflow.com/v2` as the base URL.
+
+### Audit & Activity
+
+| Endpoint | Method | Scope | Description |
+|----------|--------|-------|-------------|
+| `/workspaces/{id}/audit_logs` | GET | `workspace_activity:read` | Workspace audit logs |
+| `/sites/{id}/activity_logs` | GET | `site_activity:read` | Site activity logs |
+
+### Site Configuration
+
+| Endpoint | Method | Scope | Description |
+|----------|--------|-------|-------------|
+| `/sites/{id}/redirects` | GET | `sites:read` | List 301 redirect rules |
+| `/sites/{id}/redirects` | POST | `sites:write` | Create a 301 redirect |
+| `/sites/{id}/redirects/{rid}` | PATCH | `sites:write` | Update a 301 redirect |
+| `/sites/{id}/redirects/{rid}` | DELETE | `sites:write` | Delete a 301 redirect |
+| `/sites/{id}/robots_txt` | GET | `site_config:read` | Get robots.txt configuration |
+| `/sites/{id}/robots_txt` | PUT | `site_config:write` | Replace robots.txt configuration |
+| `/sites/{id}/robots_txt` | PATCH | `site_config:write` | Update robots.txt configuration |
+| `/sites/{id}/robots_txt` | DELETE | `site_config:write` | Delete robots.txt rules |
+| `/sites/{id}/well_known` | PUT | `site_config:write` | Upload a well-known file |
+| `/sites/{id}/well_known` | DELETE | `site_config:write` | Delete well-known files |
+
+### Workspace Management
+
+| Endpoint | Method | Scope | Description |
+|----------|--------|-------|-------------|
+| `/workspaces/{id}/sites` | POST | `workspace:write` | Create a new site |
+| `/sites/{id}` | PATCH | `sites:write` | Update a site |
+| `/sites/{id}` | DELETE | `sites:write` | Delete a site |
+| `/sites/{id}/plan` | GET | `sites:read` | Get site hosting plan |
+
+## Authentication
+
+All endpoints require Bearer token authentication:
+
+```bash
+Authorization: Bearer <your-enterprise-token>
+```
+
+<Note>
+Use **workspace API tokens** (not site tokens) for workspace-level endpoints.
+</Note>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Audit Logs" icon="clipboard-list">
+    Track workspace events: logins, role changes, membership updates, and invitations
+  </Card>
+  <Card title="Site Activity" icon="chart-line">
+    Monitor design changes, publishing events, CMS operations, and library updates
+  </Card>
+  <Card title="301 Redirects" icon="arrow-right">
+    Programmatically manage URL redirects for SEO and site migrations
+  </Card>
+  <Card title="Robots.txt" icon="robot">
+    Configure crawler rules and sitemap URLs via API
+  </Card>
+  <Card title="Well-Known Files" icon="file">
+    Upload files to `.well-known` directory for domain verification
+  </Card>
+  <Card title="Workspace Management" icon="building">
+    Create, update, and delete sites within your workspace
+  </Card>
+</CardGroup>
+
+## Code Examples
+
+### Get Workspace Audit Logs
+
+```javascript
+const response = await fetch(
+  'https://api.webflow.com/v2/workspaces/YOUR_WORKSPACE_ID/audit_logs?limit=50',
+  {
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Accept': 'application/json'
+    }
+  }
+);
+
+const data = await response.json();
+
+data.auditLogs.forEach(log => {
+  console.log(`${log.createdOn}: ${log.event} by ${log.payload.user?.email}`);
+});
+```
+
+### Get Site Activity Logs
+
+```javascript
+const response = await fetch(
+  'https://api.webflow.com/v2/sites/YOUR_SITE_ID/activity_logs?limit=50',
+  {
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Accept': 'application/json'
+    }
+  }
+);
+
+const data = await response.json();
+
+data.activityLogs.forEach(log => {
+  console.log(`${log.createdOn}: ${log.event} - ${log.payload.description}`);
+});
+```
+
+### Create a 301 Redirect
+
+```javascript
+const redirect = {
+  from: '/old-page',
+  to: '/new-page',
+  permanent: true
+};
+
+const response = await fetch(
+  'https://api.webflow.com/v2/sites/YOUR_SITE_ID/redirects',
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(redirect)
+  }
+);
+
+const data = await response.json();
+console.log('Redirect created:', data);
+```
+
+### List All Redirects
+
+```javascript
+const response = await fetch(
+  'https://api.webflow.com/v2/sites/YOUR_SITE_ID/redirects',
+  {
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Accept': 'application/json'
+    }
+  }
+);
+
+const data = await response.json();
+
+data.redirects.forEach(redirect => {
+  console.log(`${redirect.from} → ${redirect.to}`);
+});
+```
+
+### Update Robots.txt
+
+```javascript
+const robotsConfig = {
+  rules: [
+    {
+      userAgent: '*',
+      allow: ['/'],
+      disallow: ['/admin/', '/private/']
+    }
+  ],
+  sitemapUrl: 'https://example.com/sitemap.xml'
+};
+
+const response = await fetch(
+  'https://api.webflow.com/v2/sites/YOUR_SITE_ID/robots_txt',
+  {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(robotsConfig)
+  }
+);
+
+const data = await response.json();
+console.log('Robots.txt updated:', data);
+```
+
+### Upload a Well-Known File
+
+```javascript
+const fileContent = 'verification-code-here';
+
+const response = await fetch(
+  'https://api.webflow.com/v2/sites/YOUR_SITE_ID/well_known',
+  {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      fileName: 'verification.txt',
+      content: fileContent
+    })
+  }
+);
+
+const data = await response.json();
+console.log('Well-known file uploaded:', data);
+```
+
+### Create a New Site
+
+```javascript
+const newSite = {
+  displayName: 'My New Site',
+  workspaceId: 'YOUR_WORKSPACE_ID',
+  shortName: 'my-new-site'
+};
+
+const response = await fetch(
+  'https://api.webflow.com/v2/workspaces/YOUR_WORKSPACE_ID/sites',
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.WEBFLOW_ENTERPRISE_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newSite)
+  }
+);
+
+const data = await response.json();
+console.log('Site created:', data);
+```
+
+## Rate Limits
+
+<Info>
+Rate limits apply to all endpoints. Check the `X-RateLimit-Remaining` response header to monitor your usage.
+</Info>
+
+```javascript
+const response = await fetch(endpoint, options);
+
+const remaining = response.headers.get('X-RateLimit-Remaining');
+const limit = response.headers.get('X-RateLimit-Limit');
+
+console.log(`Rate limit: ${remaining}/${limit} remaining`);
+```
+
+## Pagination
+
+List endpoints support pagination via `limit` and `offset` query parameters:
+
+```javascript
+// Get first 50 audit logs
+const page1 = await fetch(
+  'https://api.webflow.com/v2/workspaces/ID/audit_logs?limit=50&offset=0',
+  { headers: { 'Authorization': `Bearer ${token}` } }
+);
+
+// Get next 50 audit logs
+const page2 = await fetch(
+  'https://api.webflow.com/v2/workspaces/ID/audit_logs?limit=50&offset=50',
+  { headers: { 'Authorization': `Bearer ${token}` } }
+);
+```
+
+## Important Notes
+
+<Warning>
+**Never handle secrets in plain text.** Store API tokens in environment variables or a secrets manager.
+</Warning>
+
+- All endpoints require an **Enterprise workspace**
+- Use workspace API tokens for workspace-level endpoints
+- Use site API tokens for site-level endpoints
+- Rate limits are enforced — monitor headers
+- Pagination is required for large result sets
+- Always use HTTPS for API requests
+
+## Reference Documentation
+
+The skill includes comprehensive reference documentation:
+
+### Audit & Activity
+- **workspace-audit-logs.md** — Workspace audit logs (login/logout, roles, membership, invitations)
+- **site-activity-logs.md** — Site activity logs (design changes, publishing, CMS, branches, libraries)
+
+### Site Configuration
+- **301-redirects.md** — 301 redirect rules (list, create, update, delete)
+- **robots-txt.md** — Robots.txt crawler rules and sitemap URL (get, replace, update, delete)
+- **well-known-files.md** — Upload files to `.well-known` directory
+
+### Workspace Management
+- **workspace-management.md** — Create, update, delete sites, and get site plans
+
+## Searching References
+
+```bash
+# List all references with metadata
+python scripts/search_references.py --list
+
+# Search by tag (exact match)
+python scripts/search_references.py --tag audit
+
+# Search by keyword
+python scripts/search_references.py --search redirects
+```
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="Security & Compliance">
+    Track all workspace and site activity for security audits, compliance reporting, and user action monitoring.
+  </Accordion>
+
+  <Accordion title="Site Migrations">
+    Bulk create and manage 301 redirects when migrating content or restructuring URLs for SEO preservation.
+  </Accordion>
+
+  <Accordion title="Multi-Site Management">
+    Programmatically create, configure, and manage multiple sites within an Enterprise workspace.
+  </Accordion>
+
+  <Accordion title="Domain Verification">
+    Upload verification files to `.well-known` for domain ownership verification with third-party services.
+  </Accordion>
+
+  <Accordion title="SEO Management">
+    Configure robots.txt rules and sitemap URLs across multiple sites from a central automation script.
+  </Accordion>
+</AccordionGroup>
+
+## License
+
+MIT License - See the [repository](https://github.com/224-industries/webflow-skills) for details.

@@ -1,0 +1,382 @@
+---
+title: Contributing
+description: How to contribute to the Webflow Agent Skills repository
+icon: code-pull-request
+---
+
+Thank you for your interest in contributing to our Webflow Agent Skills! We welcome contributions of all kinds, whether it's fixing inaccuracies in Webflow API references, improving existing skills, adding new reference documentation, or proposing entirely new Webflow-related skills.
+
+<Note>
+By contributing, you agree to abide by our [Code of Conduct](https://github.com/224-industries/webflow-skills/blob/main/CODE_OF_CONDUCT.md) to ensure a welcoming and respectful community for all.
+</Note>
+
+## Ways to Contribute
+
+<CardGroup cols={2}>
+  <Card title="Fix inaccuracies" icon="bug">
+    Spot an outdated Webflow API method or incorrect example? Submit a fix.
+  </Card>
+  
+  <Card title="Improve references" icon="file-pen">
+    Make existing Webflow documentation clearer, more complete, or better structured.
+  </Card>
+  
+  <Card title="Add references" icon="file-plus">
+    Contribute new reference files for Webflow APIs or topics not yet covered.
+  </Card>
+  
+  <Card title="Propose new skills" icon="lightbulb">
+    Have an idea for a new Webflow Agent Skill? Open an issue to discuss it.
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+### Prerequisites
+
+Before you begin, make sure you have:
+
+- Node.js 20 or higher
+- Familiarity with Markdown and YAML frontmatter
+- Understanding of Webflow's ecosystem (Designer API, Data API, etc.)
+- Git and GitHub account
+
+### Setup
+
+<Steps>
+  <Step title="Fork the repository">
+    Navigate to the [webflow-skills repository](https://github.com/224-industries/webflow-skills) and click the "Fork" button in the top right.
+  </Step>
+  
+  <Step title="Clone your fork">
+    Clone the repository to your local machine:
+    
+    ```bash
+    git clone https://github.com/your-username/webflow-skills.git
+    cd webflow-skills
+    ```
+  </Step>
+  
+  <Step title="Review the structure">
+    Familiarize yourself with the repository structure:
+    
+    ```
+    skills/<skill-name>/
+    ├── SKILL.md                    # Entry point with frontmatter + overview + reference index
+    ├── references/                 # Detailed reference docs
+    ├── scripts/                    # Helper scripts for the skill
+    └── assets/                     # Static assets (CSS, images, etc.)
+    ```
+  </Step>
+</Steps>
+
+## Skill Structure
+
+Each skill lives in `skills/<skill-name>/` and is anchored by a `SKILL.md` file with YAML frontmatter:
+
+```yaml
+---
+name: skill-name
+description: One-line description used for discovery and matching.
+license: MIT
+metadata:
+  author: "Author Name"
+  version: "1.0.0"
+  keywords: "ai, agent, skill"
+---
+```
+
+The `SKILL.md` should include:
+- Quick start workflow
+- Core patterns
+- Reference index linking to all files in `references/`
+
+<Info>
+To scaffold a new skill, use:
+```bash
+node scripts/add-skill.js <skill-name> "<description>"
+```
+</Info>
+
+## Reference File Conventions
+
+Every file in `references/` must have YAML frontmatter with three required fields:
+
+```yaml
+---
+name: "Human-Readable Title"
+description: "One-line summary of the file's contents."
+tags: [tag1, tag2, tag3]
+---
+```
+
+### Content Guidelines
+
+<Warning>
+**Plain Markdown only** — no JSX components (`<Tabs>`, `<Steps>`, `<Note>`, `<Frame>`, etc.)
+</Warning>
+
+Reference files should:
+
+- ✅ Use fenced code blocks with language identifiers (e.g., ` ```typescript `)
+- ✅ Use Markdown tables for structured data
+- ✅ Use blockquotes (`>`) for callouts and notes
+- ✅ Include a **Table of Contents** with a horizontal rule separator after it
+- ✅ End each reference with a **Best Practices** section where applicable
+- ✅ Keep references focused on one API domain or topic per file
+
+### Converting from Webflow Docs
+
+Webflow's official documentation often uses JSX/HTML components. Convert these to plain Markdown:
+
+| Source component | Convert to |
+|------------------|------------|
+| `<Tabs>` / `<Tab>` | Separate sections with `###` headings |
+| `<Note>` / `<Warning>` | Blockquote (`>`) |
+| `<Steps>` / `<Step>` | Numbered list with `###` sub-headings |
+| `<Accordion>` | Standard Markdown table or section |
+| `<Frame>` / `<img>` | Remove (image URLs won't resolve in this context) |
+| `<Button>` / `<a>` | Inline Markdown link |
+
+<Accordion title="Example conversion">
+**Source (with JSX):**
+
+The source documentation might use `<Note>` components and `<Tabs>` with nested code blocks.
+
+**Converted (plain Markdown):**
+
+Use blockquotes for notes, section headings for tabs, and regular fenced code blocks:
+
+- Replace `<Note>` with `> **Note:** content`
+- Replace `<Tabs>` sections with `###` headings
+- Keep code blocks as standard fenced code blocks
+- Remove nested Tab components
+
+For example, a Note with TypeScript/JavaScript tabs becomes a blockquote note followed by two separate sections with code blocks.
+</Accordion>
+
+## Development Workflow
+
+<Steps>
+  <Step title="Create a branch">
+    Create a new branch for your changes:
+    
+    ```bash
+    git checkout -b feat/your-change-description
+    ```
+    
+    Use conventional commit prefixes:
+    - `feat/` - New features or skills
+    - `fix/` - Bug fixes or corrections
+    - `docs/` - Documentation improvements
+    - `refactor/` - Code restructuring
+  </Step>
+  
+  <Step title="Make your changes">
+    Follow the conventions outlined in this guide:
+    - Maintain proper frontmatter in all files
+    - Use plain Markdown (no JSX)
+    - Include code examples
+    - Add appropriate tags/keywords
+  </Step>
+  
+  <Step title="Update reference index">
+    If you added or removed reference files, update the corresponding `SKILL.md` reference index to reflect the changes.
+  </Step>
+  
+  <Step title="Run sync script">
+    If you changed `SKILL.md` frontmatter, run the sync script:
+    
+    ```bash
+    node scripts/sync-skills.js
+    ```
+    
+    This updates:
+    - `manifest.json`
+    - Plugin files (`.claude-plugin/`, `.cursor-plugin/`)
+    - `skills/index.json`
+    - `README.md`
+  </Step>
+  
+  <Step title="Commit and push">
+    Commit your changes with a clear message:
+    
+    ```bash
+    git add .
+    git commit -m "feat: add authentication guide for Designer API"
+    git push origin feat/your-change-description
+    ```
+  </Step>
+</Steps>
+
+## Pull Request Process
+
+### Before Submitting
+
+Ensure your contribution meets these requirements:
+
+<Accordion title="Frontmatter validation">
+- ✅ All reference files have valid YAML frontmatter
+- ✅ Frontmatter includes `name`, `description`, and `tags`
+- ✅ SKILL.md includes all required metadata fields
+</Accordion>
+
+<Accordion title="Content validation">
+- ✅ Code examples are accurate and use correct Webflow API methods
+- ✅ No JSX/HTML components from Webflow docs remain
+- ✅ Links to other files and resources are valid
+- ✅ Tables and code blocks are properly formatted
+</Accordion>
+
+<Accordion title="Index synchronization">
+- ✅ `SKILL.md` reference index is up to date
+- ✅ Sync script has been run if frontmatter changed
+- ✅ Generated files reflect your changes
+</Accordion>
+
+### PR Guidelines
+
+When submitting your pull request:
+
+<Steps>
+  <Step title="Write a clear title">
+    Describe what changed concisely:
+    
+    **Good examples:**
+    - "Update variables-api.md to match latest Designer API"
+    - "Add authentication reference for Data API"
+    - "Fix typo in webflow-cms skill description"
+    
+    **Avoid:**
+    - "Updates"
+    - "Fixed stuff"
+    - "Changes to docs"
+  </Step>
+  
+  <Step title="Provide description">
+    Explain:
+    - What changed
+    - Why it changed
+    - Any relevant context
+    
+    ```markdown
+    ## Summary
+    Updated the Variables API reference to include new style methods
+    introduced in Webflow Designer API v2.1.0.
+    
+    ## Changes
+    - Added `setStyleVariable()` method documentation
+    - Updated examples to show new syntax
+    - Added note about backwards compatibility
+    ```
+  </Step>
+  
+  <Step title="Link related issues">
+    Reference any related issues:
+    
+    ```markdown
+    Fixes #123
+    Related to #456
+    ```
+  </Step>
+</Steps>
+
+<Note>
+Use common sense when drafting your pull request. The goal is to make it easy for maintainers to review and merge your changes. Include sufficient details but avoid unnecessary information.
+</Note>
+
+### What Happens Next
+
+After submitting your PR:
+
+1. **Automated checks run** - GitHub Actions validates your changes
+2. **Maintainer review** - A maintainer will review your PR
+3. **Feedback** - You may be asked to make changes
+4. **Merge** - Once approved, your PR will be merged
+5. **Deployment** - Changes are automatically deployed
+
+## Common Contribution Scenarios
+
+<AccordionGroup>
+  <Accordion title="Fixing an outdated API reference">
+    <Steps>
+      <Step title="Identify the file">
+        Find the reference file in `skills/<skill-name>/references/`
+      </Step>
+      <Step title="Update content">
+        Make the necessary changes to reflect current API
+      </Step>
+      <Step title="Update version">
+        Consider updating the skill version in `SKILL.md` metadata if it's a significant change
+      </Step>
+      <Step title="Test examples">
+        Ensure all code examples still work with the current API
+      </Step>
+    </Steps>
+  </Accordion>
+  
+  <Accordion title="Adding a new reference file">
+    <Steps>
+      <Step title="Create the file">
+        Add a new `.md` file in `skills/<skill-name>/references/`
+      </Step>
+      <Step title="Add frontmatter">
+        Include required `name`, `description`, and `tags` fields
+      </Step>
+      <Step title="Write content">
+        Follow the content guidelines (plain Markdown, code examples, best practices)
+      </Step>
+      <Step title="Update SKILL.md">
+        Add an entry in the SKILL.md reference index linking to your new file
+      </Step>
+    </Steps>
+  </Accordion>
+  
+  <Accordion title="Creating a new skill">
+    <Steps>
+      <Step title="Open an issue first">
+        Discuss your proposed skill with maintainers to ensure it fits the project
+      </Step>
+      <Step title="Use the scaffold script">
+        Run `node scripts/add-skill.js <name> "<description>"`
+      </Step>
+      <Step title="Build out the skill">
+        Add comprehensive content, references, and examples
+      </Step>
+      <Step title="Submit PR">
+        Follow the standard PR process
+      </Step>
+    </Steps>
+  </Accordion>
+</AccordionGroup>
+
+## Need Help?
+
+If you get stuck or have questions:
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="circle-exclamation" href="https://github.com/224-industries/webflow-skills/issues">
+    For bug reports, inaccuracies, and feature requests
+  </Card>
+  
+  <Card title="GitHub Discussions" icon="messages" href="https://github.com/224-industries/webflow-skills/discussions">
+    For questions and community support
+  </Card>
+</CardGroup>
+
+## Development Best Practices
+
+<Warning>
+**Important:** Never force push, amend, or rewrite history unless explicitly necessary. This can break release tracking and cause data loss.
+</Warning>
+
+- ✅ Always use conventional commit prefixes (`feat:`, `fix:`, `docs:`, etc.)
+- ✅ Create feature branches, never commit directly to `main`
+- ✅ Run `sync-skills.js` after changing frontmatter
+- ✅ Test your changes locally before pushing
+- ✅ Write clear commit messages and PR descriptions
+- ✅ Keep PRs focused on a single change or feature
+
+---
+
+**Thank you for contributing to Webflow Agent Skills!**

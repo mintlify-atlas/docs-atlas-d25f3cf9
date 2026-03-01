@@ -1,0 +1,359 @@
+---
+title: Creating Skills
+description: Learn how to create new Webflow Agent Skills with proper structure and metadata
+icon: wand-magic-sparkles
+---
+
+This guide walks you through creating new skills for the Webflow Agent Skills repository, from scaffolding to publication.
+
+## Quick Start
+
+The fastest way to create a new skill is using the `add-skill.js` script:
+
+```bash
+node scripts/add-skill.js <skill-name> "<description>"
+```
+
+<Accordion title="Example: Creating a forms skill">
+```bash
+node scripts/add-skill.js webflow-forms "Help agents work with Webflow Forms API"
+```
+
+This will:
+1. Create `skills/webflow-forms/` directory
+2. Generate `SKILL.md` with proper frontmatter
+3. Run `sync-skills.js` to register the skill
+4. Update manifest.json, plugin files, and README
+</Accordion>
+
+## Skill Structure
+
+Each skill follows a consistent directory structure:
+
+```
+skills/<skill-name>/
+├── SKILL.md                    # Entry point with frontmatter + overview + reference index
+├── references/                 # Detailed reference docs (API guides, guidelines, etc.)
+├── scripts/                    # Helper scripts for the skill
+└── assets/                     # Static assets (CSS, images, etc.)
+```
+
+### The SKILL.md File
+
+The `SKILL.md` file is the entry point for your skill and must include YAML frontmatter:
+
+```yaml
+---
+name: skill-name
+description: One-line description used for discovery and matching.
+license: MIT
+metadata:
+  author: "224 Industries"
+  version: "1.0.0"
+  keywords: "ai, agent, skill, keyword1, keyword2"
+  repository: "https://github.com/224-industries/webflow-skills"
+---
+```
+
+<Note>
+The `author` and `repository` fields are automatically populated from `manifest.json` by the sync script.
+</Note>
+
+### Frontmatter Field Reference
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | ✅ | Skill identifier (lowercase-with-hyphens) |
+| `description` | ✅ | One-line description for discovery and matching |
+| `license` | ✅ | Must be an OSI-approved license (typically MIT) |
+| `metadata.author` | ✅ | Author name (auto-synced from manifest.json) |
+| `metadata.version` | ✅ | Semantic version (e.g., "1.0.0") |
+| `metadata.keywords` | ✅ | Comma-separated keywords for discoverability |
+| `metadata.repository` | ✅ | Repository URL (auto-synced from manifest.json) |
+
+## SKILL.md Content Structure
+
+After the frontmatter, your SKILL.md should include:
+
+<Steps>
+  <Step title="Quick start workflow">
+    Provide a brief overview of how agents should use this skill, including common patterns and workflows.
+  </Step>
+  
+  <Step title="Core API patterns">
+    Include code examples demonstrating the most important API interactions for this skill.
+  </Step>
+  
+  <Step title="Reference documentation index">
+    Link to all files in the `references/` directory with brief descriptions of each.
+  </Step>
+  
+  <Step title="Scripts and assets">
+    Document any helper scripts or assets included with the skill.
+  </Step>
+  
+  <Step title="License information">
+    Include standard MIT license footer or your chosen OSI-approved license.
+  </Step>
+</Steps>
+
+## Reference File Conventions
+
+Every file in `references/` must have YAML frontmatter with three fields:
+
+```yaml
+---
+name: "Human-Readable Title"
+description: "One-line summary of the file's contents."
+tags: [tag1, tag2, tag3]
+---
+```
+
+### Field Guidelines
+
+<Accordion title="name">
+Descriptive title that clearly identifies the content
+
+**Examples:**
+- "Elements API"
+- "Marketplace Guidelines"
+- "Designer API Authentication"
+</Accordion>
+
+<Accordion title="description">
+Single sentence summarizing what the file covers
+
+**Examples:**
+- "Complete reference for managing Webflow page elements via Designer API."
+- "Guidelines for publishing apps to the Webflow Marketplace."
+</Accordion>
+
+<Accordion title="tags">
+Array of searchable keywords including:
+- API method names
+- Category terms
+- Key concepts
+
+**Example:**
+```yaml
+tags: [elements, designer-api, dom, create-element, update-element]
+```
+</Accordion>
+
+### Content Style Guidelines
+
+<Warning>
+**Plain Markdown only** — Do not use JSX components like `<Tabs>`, `<Steps>`, `<Note>`, or `<Frame>`.
+</Warning>
+
+Reference files must use pure Markdown:
+
+- ✅ Use fenced code blocks with language identifiers (e.g., ` ```typescript `)
+- ✅ Use Markdown tables for structured data
+- ✅ Use blockquotes (`>`) for callouts and notes
+- ✅ Include a **Table of Contents** with a horizontal rule separator
+- ✅ End with a **Best Practices** section where applicable
+- ✅ Keep references focused on one API domain or topic per file
+
+### Converting from Webflow Documentation
+
+When adapting content from Webflow's official documentation, convert JSX/HTML components to plain Markdown:
+
+| Source component | Convert to |
+|------------------|------------|
+| `<Tabs>` / `<Tab>` | Separate sections with `###` headings |
+| `<Note>` / `<Warning>` | Blockquote (`>`) with bold prefix |
+| `<Steps>` / `<Step>` | Numbered list with `###` sub-headings |
+| `<Accordion>` | Standard Markdown table or section |
+| `<Frame>` / `<img>` | Remove (image URLs won't resolve in agent context) |
+| `<Button>` / `<a>` | Inline Markdown link `[text](url)` |
+
+<Accordion title="Example conversion">
+**Source (with JSX):**
+```jsx
+<Note>
+Make sure to authenticate before calling the API.
+</Note>
+
+<Steps>
+  <Step title="Get token">
+    Call the auth endpoint
+  </Step>
+  <Step title="Make request">
+    Include token in headers
+  </Step>
+</Steps>
+```
+
+**Converted (plain Markdown):**
+```markdown
+> **Note:** Make sure to authenticate before calling the API.
+
+### Authentication Steps
+
+1. **Get token** — Call the auth endpoint
+2. **Make request** — Include token in headers
+```
+</Accordion>
+
+## Using the add-skill.js Script
+
+The `add-skill.js` script automates skill creation with proper structure:
+
+### Script Workflow
+
+<Steps>
+  <Step title="Name normalization">
+    Converts your input to lowercase-with-hyphens format:
+    - `"My New Skill"` → `"my-new-skill"`
+    - Removes special characters
+    - Ensures valid directory name
+  </Step>
+  
+  <Step title="Load manifest">
+    Reads `manifest.json` to get:
+    - Author name (defaults to "224 Industries")
+    - License (defaults to "MIT")
+    - Repository URL
+  </Step>
+  
+  <Step title="Create skill directory">
+    Creates `skills/<skill-name>/` directory
+  </Step>
+  
+  <Step title="Generate SKILL.md">
+    Creates SKILL.md with properly formatted frontmatter:
+    ```yaml
+    ---
+    name: skill-name
+    description: Your provided description
+    license: MIT
+    metadata:
+      author: "224 Industries"
+      version: "1.0.0"
+      keywords: "ai, agent, skill"
+    ---
+    ```
+  </Step>
+  
+  <Step title="Run sync">
+    Automatically calls `sync-skills.js` to:
+    - Register skill in manifest.json
+    - Update plugin files
+    - Update skills/index.json
+    - Update README.md
+  </Step>
+</Steps>
+
+### Script Parameters
+
+```bash
+node scripts/add-skill.js <skill-name> "<description>"
+```
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `skill-name` | ✅ | Name of the skill (will be normalized) |
+| `description` | ✅ | Brief description (use quotes if contains spaces) |
+
+<Info>
+**Tip:** Use descriptive keywords in your skill name for better discoverability. For example: `webflow-forms`, `webflow-cms`, `webflow-designer`.
+</Info>
+
+### After Creation
+
+Once the script completes, you'll see:
+
+```
+Creating skill: your-skill-name
+
+Created skills/your-skill-name/SKILL.md
+
+Running sync-skills.js...
+
+Found 1 agent skill(s):
+  - your-skill-name
+
+Updated manifest.json
+Updated .claude-plugin/plugin.json
+Updated .claude-plugin/marketplace.json
+Updated .cursor-plugin/plugin.json
+Updated skills/index.json
+Updated README.md
+
+Skill Sync Complete!
+
+Skill "your-skill-name" created successfully!
+
+Next steps:
+  1. Edit skills/your-skill-name/SKILL.md to add your skill content
+  2. Add keywords to the SKILL.md frontmatter for better discoverability
+```
+
+## Next Steps
+
+<Steps>
+  <Step title="Edit SKILL.md">
+    Add your skill's content, including:
+    - Quick start workflow
+    - Core API patterns
+    - Code examples
+    - Reference index
+  </Step>
+  
+  <Step title="Add reference files">
+    Create detailed reference documentation in `references/` directory:
+    ```bash
+    skills/your-skill-name/references/
+    ├── api-overview.md
+    ├── authentication.md
+    └── best-practices.md
+    ```
+  </Step>
+  
+  <Step title="Update keywords">
+    Edit the `metadata.keywords` field in SKILL.md frontmatter for better discoverability:
+    ```yaml
+    keywords: "ai, agent, skill, webflow, forms, api, designer"
+    ```
+  </Step>
+  
+  <Step title="Sync changes">
+    Run sync script if you changed frontmatter:
+    ```bash
+    node scripts/sync-skills.js
+    ```
+  </Step>
+  
+  <Step title="Test locally">
+    Install the skill in your AI agent and test functionality before publishing.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep skills focused">
+    Each skill should cover a specific domain (e.g., Forms API, CMS API, Designer API) rather than trying to be comprehensive. This makes skills easier to maintain and more useful for agents.
+  </Accordion>
+  
+  <Accordion title="Use descriptive keywords">
+    Add relevant keywords to improve discoverability. Include:
+    - API names
+    - Method names
+    - Common use cases
+    - Related technologies
+  </Accordion>
+  
+  <Accordion title="Provide complete examples">
+    Include full, runnable code examples that agents can use as templates. Show authentication, error handling, and common patterns.
+  </Accordion>
+  
+  <Accordion title="Keep references updated">
+    Reference documentation should match the current Webflow API. When APIs change, update your references promptly.
+  </Accordion>
+  
+  <Accordion title="Link between files">
+    Create a web of related content by linking between your SKILL.md and reference files, and between reference files themselves.
+  </Accordion>
+</AccordionGroup>

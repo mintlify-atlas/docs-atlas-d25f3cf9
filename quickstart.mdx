@@ -1,80 +1,176 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Get started with Webflow Agent Skills in minutes
 ---
 
-## Get started in three steps
+# Quick Start
 
-Get your documentation site running locally and make your first customization.
+This guide will help you get started with Webflow Agent Skills by walking through a common use case: setting up webhook verification.
 
-### Step 1: Set up your local environment
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Install the skills">
+    First, install Webflow Agent Skills using the Skills CLI:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    npx skills add 224-industries/webflow-skills
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    Or install just the webhooks skill:
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    ```bash
+    npx skills add 224-industries/webflow-skills --skill webflow-webhooks
+    ```
+  </Step>
+  
+  <Step title="Verify installation">
+    Confirm the skills are available to your AI agent by checking your agent's skills configuration or asking it to list installed skills.
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Example: Webflow Webhook Verification
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Let's use the `webflow-webhooks` skill to create a secure webhook handler that verifies incoming Webflow events.
 
-### Step 3: Go live
+<Steps>
+  <Step title="Ask your agent to create a webhook handler">
+    With the skill installed, you can now ask your AI agent:
+    
+    ```
+    "Create a Node.js webhook handler that receives and verifies Webflow webhook events"
+    ```
+    
+    The agent will use the webflow-webhooks skill to generate code that follows Webflow's security best practices.
+  </Step>
+  
+  <Step title="Review the generated code">
+    Your agent will generate code similar to this:
+    
+    ```javascript
+    const crypto = require('crypto');
+    const express = require('express');
+    const app = express();
+    
+    app.use(express.json());
+    
+    app.post('/webhook', (req, res) => {
+      const signature = req.headers['x-webflow-signature'];
+      const webhookSecret = process.env.WEBFLOW_WEBHOOK_SECRET;
+      
+      // Verify webhook signature
+      const hash = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(JSON.stringify(req.body))
+        .digest('hex');
+      
+      if (hash !== signature) {
+        return res.status(401).send('Invalid signature');
+      }
+      
+      // Handle the webhook event
+      const { triggerType, data } = req.body;
+      
+      console.log('Webhook received:', triggerType);
+      console.log('Data:', data);
+      
+      res.status(200).send('Webhook received');
+    });
+    
+    app.listen(3000, () => {
+      console.log('Webhook server running on port 3000');
+    });
+    ```
+  </Step>
+  
+  <Step title="Deploy and test">
+    The agent can help you:
+    - Set up environment variables
+    - Deploy the webhook handler
+    - Configure the webhook in Webflow
+    - Test with sample events
+  </Step>
+</Steps>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## Working with Other Skills
 
-## Next steps
+Each skill provides specialized capabilities for different Webflow features:
 
-Now that you have your docs running, explore these key features:
+### Webflow Designer API
 
-<CardGroup cols={2}>
+Build Designer Extensions or generate code for the Playground:
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+```
+"Create a Designer Extension that adds a button to insert a pre-styled card component"
+```
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+### Webflow Code Components
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+Create React components for Webflow:
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+```
+"Build a React code component with a text prop and image prop that I can import into Webflow"
+```
 
-</CardGroup>
+### Webflow Browser API
+
+Manage tracking and consent:
+
+```
+"Add code to integrate OneTrust consent management with Webflow Analyze"
+```
+
+### Webflow Enterprise API
+
+Work with Enterprise endpoints:
+
+```
+"Fetch audit logs for my workspace using the Webflow Enterprise API"
+```
+
+## Skill Discovery
+
+Your AI agent automatically knows when to use each skill based on your request. The skills include:
+
+- **Detailed API references** - Complete documentation for all Webflow APIs
+- **Code examples** - Production-ready patterns and snippets
+- **Best practices** - Security, performance, and design guidelines
+- **Helper scripts** - Utilities to search and navigate references
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Skills work across any AI agent that supports the [Agent Skills standard](https://agentskills.io), including Claude, Cursor, Playbooks, Context7, and Gumloop.
 </Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Webflow Browser API" icon="browser" href="/skills/webflow-browser-api">
+    Control Webflow Analyze and Optimize from JavaScript
+  </Card>
+  
+  <Card title="Webflow Code Components" icon="code" href="/skills/webflow-code-components">
+    Build React code components for Webflow
+  </Card>
+  
+  <Card title="Webflow Designer API" icon="paintbrush" href="/skills/webflow-designer-api">
+    Build Designer Extensions and API integrations
+  </Card>
+  
+  <Card title="Webflow Enterprise API" icon="building" href="/skills/webflow-enterprise-api">
+    Access Enterprise-only API endpoints
+  </Card>
+  
+  <Card title="Webflow Webhooks" icon="webhook" href="/skills/webflow-webhooks">
+    Handle Webflow events securely
+  </Card>
+</CardGroup>
+
+## Resources
+
+- [Agent Skills Specification](https://agentskills.io/specification)
+- [GitHub Repository](https://github.com/224-industries/webflow-skills)
+- [Webflow Skills Kit](https://flashbrew.digital/webflow-skills-kit) (Premium bundle)
+
+<Tip>
+  Try asking your agent to explain what each skill does or to show you examples from the skill's reference documentation.
+</Tip>

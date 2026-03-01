@@ -1,0 +1,196 @@
+---
+title: "Browser API"
+description: "Control Webflow Analyze and Optimize from JavaScript via the Browser API"
+---
+
+## Overview
+
+The Webflow Browser API is a JavaScript interface exposed via the global `wf` object on all Webflow sites with Analyze and Optimize enabled. It requires no manual installation and enables you to manage tracking consent, integrate with Consent Management Platforms (CMPs), track experiment variations, and personalize user experiences.
+
+<Info>
+The Browser API is automatically available on sites with Webflow Analyze or Optimize enabled. No installation required.
+</Info>
+
+## Download Skill
+
+Add this skill to your AI agent to help with Browser API integration:
+
+```bash
+https://skills.224ai.au/webflow-browser-api.skill
+```
+
+## Key Concepts
+
+<CardGroup cols={2}>
+  <Card title="Global wf Object" icon="browser">
+    Automatically available on all sites with Analyze or Optimize enabled
+  </Card>
+  <Card title="wf.ready() Callback" icon="check">
+    All Browser API calls must be wrapped in this readiness callback
+  </Card>
+  <Card title="Consent Management" icon="shield">
+    Three methods to manage tracking consent: get, allow, and deny
+  </Card>
+  <Card title="Custom Attributes" icon="user">
+    Set visitor attributes for audience targeting (Enterprise only)
+  </Card>
+</CardGroup>
+
+## API Methods
+
+The Browser API provides the following methods:
+
+| Method | Description |
+|--------|-------------|
+| `wf.ready(callback)` | Execute code after the Browser API loads |
+| `wf.getUserTrackingChoice()` | Returns `"allow"`, `"deny"`, or `"none"` |
+| `wf.allowUserTracking(options?)` | Opt user into tracking |
+| `wf.denyUserTracking(options?)` | Opt user out of tracking |
+| `wf.onVariationRecorded(callback)` | Register a callback for variation events |
+| `wf.setAttributes(scope, attributes)` | Set custom visitor attributes |
+
+### Basic Usage Example
+
+All Browser API calls must be wrapped in `wf.ready()`:
+
+```javascript
+wf.ready(function() {
+  // Check current tracking choice
+  const choice = wf.getUserTrackingChoice();
+  console.log('Tracking choice:', choice); // "allow", "deny", or "none"
+  
+  // Allow tracking
+  if (choice === "none") {
+    wf.allowUserTracking();
+  }
+});
+```
+
+### Tracking Experiment Variations
+
+```javascript
+wf.ready(function() {
+  wf.onVariationRecorded(function(data) {
+    // Forward to your analytics tool
+    console.log('Experiment:', data.experimentId);
+    console.log('Variation:', data.variationId);
+  });
+});
+```
+
+## Consent Management Integration
+
+The Browser API integrates seamlessly with popular Consent Management Platforms:
+
+<AccordionGroup>
+  <Accordion title="OneTrust Integration">
+    Sync Webflow's tracking state with OneTrust consent choices:
+
+    ```javascript
+    wf.ready(function() {
+      OneTrust.OnConsentChanged(function() {
+        const groups = OnetrustActiveGroups;
+        if (groups.includes('C0002')) {
+          wf.allowUserTracking();
+        } else {
+          wf.denyUserTracking();
+        }
+      });
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="TrustArc Integration">
+    Respond to TrustArc consent events:
+
+    ```javascript
+    wf.ready(function() {
+      window.addEventListener('trustarc.message', function(e) {
+        if (e.detail.consent === 'granted') {
+          wf.allowUserTracking();
+        } else {
+          wf.denyUserTracking();
+        }
+      });
+    });
+    ```
+  </Accordion>
+
+  <Accordion title="Custom Consent Solution">
+    Build your own consent banner:
+
+    ```javascript
+    wf.ready(function() {
+      document.getElementById('accept-btn').addEventListener('click', function() {
+        wf.allowUserTracking({ persist: true });
+      });
+      
+      document.getElementById('deny-btn').addEventListener('click', function() {
+        wf.denyUserTracking({ persist: true });
+      });
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Custom Visitor Attributes
+
+<Note>
+Custom JavaScript attributes via `setAttributes()` are only available on Enterprise sites.
+</Note>
+
+```javascript
+wf.ready(function() {
+  wf.setAttributes('visitor', {
+    plan: 'premium',
+    industry: 'technology',
+    company_size: '50-200'
+  });
+});
+```
+
+## Important Notes
+
+<Warning>
+Always wrap all API calls inside `wf.ready()` to prevent calls before initialization.
+</Warning>
+
+- The Browser API is only available on sites with Webflow Analyze or Optimize enabled
+- Custom JavaScript attributes are Enterprise-only
+- Place scripts in `<head>` custom code for earliest possible execution
+- Consent choices can be persisted with the `persist` option
+
+## Reference Documentation
+
+The skill includes comprehensive reference documentation:
+
+### Getting Started
+- **introduction.md** — Overview, capabilities, placement options, getting started
+- **wf-ready.md** — `wf.ready()` API reference
+
+### Consent Management
+- **consent-management.md** — Consent APIs, CMP integrations (OneTrust, TrustArc), custom consent solutions
+
+### Optimize
+- **optimize-overview.md** — Optimize overview and quickstart
+- **variations.md** — Variations concept and `onVariationRecorded()` API reference
+- **attributes.md** — Custom attributes and `setAttributes()` API reference
+
+## Searching References
+
+The skill includes a Python search script to quickly find relevant documentation:
+
+```bash
+# List all references with metadata
+python scripts/search_references.py --list
+
+# Search by tag (exact match)
+python scripts/search_references.py --tag consent
+
+# Search by keyword
+python scripts/search_references.py --search tracking
+```
+
+## License
+
+MIT License - See the [repository](https://github.com/224-industries/webflow-skills) for details.

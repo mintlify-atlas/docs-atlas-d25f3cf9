@@ -1,0 +1,307 @@
+---
+title: "Code Components"
+description: "Build, define, and import React code components into Webflow via DevLink"
+---
+
+## Overview
+
+Webflow Code Components allow you to build advanced, interactive React components in your codebase and deploy them to Webflow as shared libraries. Components can be visually composed on the canvas, enabling designers to use custom components without writing code.
+
+<Info>
+Code Components require a Webflow Workspace on Freelancer, Core, Growth, Agency, or Enterprise plan (or a site on CMS, Business, or Enterprise).
+</Info>
+
+## Download Skill
+
+Add this skill to your AI agent to help with Code Components development:
+
+```bash
+https://skills.224ai.au/webflow-code-components.skill
+```
+
+## Quick Start
+
+<Steps>
+  <Step title="Set up your project">
+    Install the CLI and dependencies:
+    ```bash
+    npm install -g @webflow/webflow-cli
+    npm install react react-dom
+    ```
+  </Step>
+
+  <Step title="Create a React component">
+    Build your standard React component:
+    ```tsx
+    // MyComponent.tsx
+    export function MyComponent({ title, count }) {
+      return (
+        <div>
+          <h1>{title}</h1>
+          <p>Count: {count}</p>
+        </div>
+      );
+    }
+    ```
+  </Step>
+
+  <Step title="Define the code component">
+    Create a `.webflow.tsx` file with `declareComponent`:
+    ```tsx
+    // MyComponent.webflow.tsx
+    import { MyComponent } from './MyComponent';
+    import { declareComponent } from '@webflow/component-api';
+
+    export default declareComponent(MyComponent, {
+      displayName: 'My Component',
+      props: {
+        title: { type: 'Text', default: 'Hello' },
+        count: { type: 'Number', default: 0 }
+      }
+    });
+    ```
+  </Step>
+
+  <Step title="Import to Webflow">
+    Run the CLI command:
+    ```bash
+    npx webflow library share
+    ```
+  </Step>
+
+  <Step title="Use on canvas">
+    Install the library on a site, then drag and drop components from the Add panel.
+  </Step>
+</Steps>
+
+## Key Concepts
+
+<CardGroup cols={2}>
+  <Card title="Shadow DOM Isolation" icon="shield">
+    Styles and DOM are sandboxed per component, preventing global CSS conflicts
+  </Card>
+  <Card title="Separate React Roots" icon="circle-nodes">
+    No shared React Context or state between components
+  </Card>
+  <Card title="SSR by Default" icon="server">
+    Server-rendered HTML is hydrated on the client for better performance
+  </Card>
+  <Card title="declareComponent" icon="code">
+    Defines how your React component appears and behaves in Webflow
+  </Card>
+</CardGroup>
+
+## Prop Types
+
+Code Components support 11 prop types for configuring components in the Webflow Designer:
+
+| Prop Type | Description | Use Case |
+|-----------|-------------|----------|
+| **Text** | Single-line text input | Short strings, labels, titles |
+| **Rich Text** | Formatted HTML content | Descriptions, articles |
+| **Text Node** | On-canvas editable text | Headings that designers can style |
+| **Link** | URL with target and preload | Navigation, CTAs |
+| **Image** | Asset library image selection | Photos, illustrations, logos |
+| **Number** | Numeric input with range | Counts, dimensions, opacity |
+| **Boolean** | True/false toggle | Feature flags, visibility |
+| **Variant** | Predefined option dropdown | Themes, sizes, styles |
+| **Visibility** | Show/hide toggle | Conditional rendering |
+| **Slot** | Child component insertion | Layouts, wrappers |
+| **ID** | HTML element identifier | Accessibility, anchors |
+
+### Prop Type Example
+
+```tsx
+import { declareComponent } from '@webflow/component-api';
+import { Button } from './Button';
+
+export default declareComponent(Button, {
+  displayName: 'Custom Button',
+  props: {
+    label: {
+      type: 'Text',
+      default: 'Click me',
+      displayName: 'Button Label'
+    },
+    variant: {
+      type: 'Variant',
+      options: ['primary', 'secondary', 'ghost'],
+      default: 'primary'
+    },
+    disabled: {
+      type: 'Boolean',
+      default: false
+    },
+    icon: {
+      type: 'Image',
+      displayName: 'Icon'
+    }
+  }
+});
+```
+
+## Component Architecture
+
+<Tip>
+Components render in isolated Shadow DOM environments. Use CSS-in-JS, CSS modules, or scoped stylesheets for styling.
+</Tip>
+
+### Shadow DOM & Styling
+
+Because components render in Shadow DOM, global stylesheets won't apply. Use one of these approaches:
+
+<Accordion title="CSS-in-JS (Styled Components, Emotion)">
+  ```tsx
+  import styled from 'styled-components';
+
+  const StyledButton = styled.button`
+    background: ${props => props.theme.primary};
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+  `;
+  ```
+</Accordion>
+
+<Accordion title="Tailwind CSS">
+  Configure Tailwind to work with Shadow DOM:
+  ```tsx
+  // In your component
+  import styles from './styles.css?inline';
+
+  export function Component() {
+    return (
+      <>
+        <style>{styles}</style>
+        <div className="bg-blue-500 text-white p-4">
+          Content
+        </div>
+      </>
+    );
+  }
+  ```
+</Accordion>
+
+<Accordion title="CSS Modules">
+  ```tsx
+  import styles from './Button.module.css';
+
+  export function Button({ label }) {
+    return <button className={styles.button}>{label}</button>;
+  }
+  ```
+</Accordion>
+
+### State & Data Management
+
+<Warning>
+Components have separate React roots — no shared Context or state. Use alternative patterns:
+</Warning>
+
+- **URL parameters** — Share state via query strings
+- **Browser storage** — `localStorage` or `sessionStorage`
+- **Nano Stores** — Lightweight global state management
+- **Custom events** — `window.postMessage()` or custom events
+
+```tsx
+// Using Nano Stores for shared state
+import { atom } from 'nanostores';
+
+export const cartCount = atom(0);
+
+// In your component
+import { useStore } from '@nanostores/react';
+import { cartCount } from './store';
+
+export function CartBadge() {
+  const count = useStore(cartCount);
+  return <span>{count}</span>;
+}
+```
+
+## Server-Side Rendering
+
+Components are server-rendered by default for better performance and SEO. Disable SSR for browser-only components:
+
+```tsx
+export default declareComponent(BrowserOnlyComponent, {
+  displayName: 'Browser Only',
+  ssr: false, // Disable SSR
+  props: { /* ... */ }
+});
+```
+
+## Bundling & Import
+
+<Note>
+Webpack bundles your library with a 50MB maximum size limit.
+</Note>
+
+```bash
+# Bundle and share to Webflow
+npx webflow library share
+
+# List available commands
+npx webflow --help
+
+# Authenticate
+npx webflow auth login
+```
+
+## Important Notes
+
+<Warning>
+**File names are unique identifiers.** Renaming a `.webflow.tsx` file creates a new component and removes the old one — existing instances on sites will break.
+</Warning>
+
+- React Server Components are **not** supported — use standard React components only
+- Components can fetch data client-side, but APIs must support CORS
+- Never embed API keys in component code — they're visible in the browser
+- Each component runs in its own Shadow DOM with isolated styles
+
+## Reference Documentation
+
+The skill includes comprehensive reference documentation:
+
+### Getting Started
+- **introduction.md** — Overview of DevLink and code components
+- **quick-start.md** — End-to-end tutorial from setup to canvas
+- **installation.md** — CLI installation, `webflow.json` config, authentication
+
+### Building Components
+- **define-code-component.md** — `declareComponent`, props, decorators, options
+- **hooks.md** — `declareComponent` and `useWebflowContext` hook reference
+- **component-architecture.md** — Shadow DOM, SSR, state patterns, data fetching
+- **styling-components.md** — CSS in Shadow DOM, site variables, tag selectors
+- **frameworks-and-libraries.md** — Tailwind, styled-components, Emotion, Material UI, Shadcn/UI
+
+### Prop Types
+- **prop-types.md** — All prop types with usage, return values, and examples
+- Individual files for each prop type (text.md, rich-text.md, link.md, etc.)
+
+### Bundling & CLI
+- **cli.md** — Webflow CLI commands, flags, CI/CD usage, troubleshooting
+- **bundling-and-import.md** — Webpack bundling, CLI import, CI/CD, debugging
+
+### Help
+- **faq.md** — Frequently asked questions and troubleshooting
+
+## Searching References
+
+```bash
+# List all references with metadata
+python scripts/search_references.py --list
+
+# Search by tag (exact match)
+python scripts/search_references.py --tag props
+
+# Search only prop type references
+python scripts/search_references.py --prop-types
+
+# Search by keyword
+python scripts/search_references.py --search shadow-dom
+```
+
+## License
+
+MIT License - See the [repository](https://github.com/224-industries/webflow-skills) for details.
