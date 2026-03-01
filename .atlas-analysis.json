@@ -1,0 +1,60 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Webflow Agent Skills",
+  "projectDescription": "A collection of Agent Skills that enhance AI agents with specialized Webflow functionality.",
+  "theme": "palm",
+  "primaryColor": "#146EF5",
+  "lightColor": "#6AFFDC",
+  "darkColor": "#0F4FB5",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Skills",
+        "pages": [
+          "skills/webflow-browser-api",
+          "skills/webflow-code-components",
+          "skills/webflow-designer-api",
+          "skills/webflow-enterprise-api",
+          "skills/webflow-webhooks"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/architecture",
+          "guides/creating-skills",
+          "guides/contributing"
+        ]
+      },
+      {
+        "group": "Resources",
+        "pages": [
+          "resources/about",
+          "resources/links"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Browser API skill for Webflow Analyze and Optimize",
+    "Code Components skill for React DevLink integration",
+    "Designer API skill for extensions and playground",
+    "Enterprise API skill for workspace management",
+    "Webhooks skill for event handling and verification"
+  ],
+  "publicApiSurface": [
+    "webflow-browser-api",
+    "webflow-code-components",
+    "webflow-designer-api",
+    "webflow-enterprise-api",
+    "webflow-webhooks"
+  ]
+}
